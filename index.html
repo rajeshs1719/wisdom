@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>AI Smart Bin Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+</head>
+<body>
+  <main class="dashboard-container">
+    <header class="header">
+      <h1>WISDOM</h1>
+      <p>Interactive Waste Segregation Dashboard</p>
+    </header>
+    <section class="bin-scene">
+      <div class="bin-model" id="bin-model">
+        <div class="bin-top-ring"></div>
+        <div class="lid-container" id="lid-container">
+          <div class="lid" id="lid">
+            <div class="lid-handle"></div>
+          </div>
+        </div>
+        <div class="bin-body">
+          <div class="compartment" id="wet-comp"><div class="fill" id="wet-fill"></div></div>
+          <div class="compartment" id="dry-comp"><div class="fill" id="dry-fill"></div></div>
+          <div class="compartment" id="combined-comp"><div class="fill" id="combined-fill"></div></div>
+        </div>
+        <div class="bin-base"></div>
+      </div>
+    </section>
+    <section class="progress-indicators">
+      <div class="indicator">
+        <span class="indicator-color wet"></span>
+        <p>Wet: <strong id="wet-percentage">0%</strong></p>
+      </div>
+      <div class="indicator">
+        <span class="indicator-color dry"></span>
+        <p>Dry: <strong id="dry-percentage">0%</strong></p>
+      </div>
+      <div class="indicator">
+        <span class="indicator-color combined"></span>
+        <p>Combined: <strong id="combined-percentage">0%</strong></p>
+      </div>
+    </section>
+    <section class="controls">
+      <button id="wet-btn" class="wet" aria-label="Add Wet Waste">Add Wet</button>
+      <button id="dry-btn" class="dry" aria-label="Add Dry Waste">Add Dry</button>
+      <button id="combined-btn" class="combined" aria-label="Add Combined Waste">Add Combined</button>
+      <button id="reset-btn" class="reset" aria-label="Reset Bin">Reset</button>
+    </section>
+  </main>
+  <script src="script.js"></script>
+</body>
+</html>

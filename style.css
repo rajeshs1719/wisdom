@@ -1,0 +1,385 @@
+:root {
+  /* No changes to variables */
+  --bin-width: 220px;
+  --bin-height: 270px;
+  --dark-bg: #10131a;
+  --light-bg: #23283a;
+  --primary-text: #f9fafb;
+  --secondary-text: #b0b8c9;
+  --wet-color: #2ecc71;
+  --dry-color: #3498db;
+  --combined-color: #f39c12;
+  --reset-color: #e74c3c;
+  --glass-bg: rgba(23, 24, 26, 0.65);
+  --glass-border: rgba(255, 255, 255, 0.12);
+  --shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+}
+
+body {
+  font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
+  background: linear-gradient(135deg, #e0f7fa, #ffffff);
+  min-height: 100vh;
+  color: var(--primary-text);
+  margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.5s;
+  background-size: 200% 200%;
+  animation: bgMove 12s ease-in-out infinite alternate;
+  /* Added padding for small screens to prevent content from touching edges */
+  padding: 1rem;
+  box-sizing: border-box;
+}
+
+@keyframes bgMove {
+  0% {
+    background-position: 0% 50%;
+  }
+
+  100% {
+    background-position: 100% 50%;
+  }
+}
+
+.dashboard-container {
+  background: var(--glass-bg);
+  border-radius: 24px;
+  /* Using clamp() for responsive padding */
+  padding: clamp(1rem, 5vw, 2rem) clamp(0.75rem, 4vw, 1.75rem);
+  box-shadow: var(--shadow);
+  border: 1.5px solid var(--glass-border);
+  text-align: center;
+  max-width: 540px;
+  /* Changed width to 100% to fill the padded body */
+  width: 100%;
+  backdrop-filter: blur(8px);
+  position: relative;
+  margin: 0; /* Removed margin to rely on body padding */
+}
+
+.header h1 {
+  /* Fluid typography for smooth scaling on all screen sizes */
+  font-size: clamp(1.8rem, 6vw, 2.1rem);
+  font-weight: 700;
+  margin: 0 0 10px 0;
+  letter-spacing: 0.02em;
+  color: #fff;
+  text-shadow: 0 2px 12px #0002;
+}
+
+.header p {
+  color: var(--secondary-text);
+  /* Fluid typography for the subtitle */
+  font-size: clamp(0.9rem, 3vw, 1.08rem);
+  margin-bottom: 30px;
+}
+
+.bin-scene {
+  /* Made height responsive to scale with the width */
+  height: clamp(220px, 60vw, 270px);
+  perspective: 1400px;
+  margin-bottom: 18px;
+}
+
+.bin-model {
+  /* Made width responsive */
+  width: clamp(180px, 50vw, 220px);
+  height: 100%;
+  margin: 0 auto;
+  position: relative;
+  transform-style: preserve-3d;
+  filter: drop-shadow(0 8px 32px #0006);
+  transition: filter 0.3s;
+}
+
+/* --- No changes needed for the following sections, they adapt well --- */
+.bin-body,
+.lid-container,
+.lid {
+  transform-style: preserve-3d;
+}
+
+.bin-body {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  bottom: 0;
+  border-radius: 18px;
+  background: linear-gradient(90deg, #b8b8b8 0%, #ececec 55%, #b8b8b8 100%);
+  box-shadow: 0 10px 32px rgba(0, 0, 0, 0.29), 0 1px 6px rgba(50, 50, 50, 0.22) inset;
+  display: flex;
+  overflow: hidden;
+  border: 2.5px solid #e0e0e0;
+}
+
+.compartment {
+  height: 100%;
+  position: relative;
+}
+
+#wet-comp {
+  width: 50%;
+}
+
+#dry-comp,
+#combined-comp {
+  width: 25%;
+}
+
+.compartment.divider {
+  border-left: 2px solid #e0e0e0a0;
+  border-right: 2px solid #e0e0e0a0;
+}
+
+.bin-top-ring,
+.bin-base {
+  position: absolute;
+  width: 110%;
+  left: -5%;
+  border-radius: 8px;
+}
+
+.bin-top-ring {
+  top: -14px;
+  height: 14px;
+  background: linear-gradient(to top, #969696, #e0e0e0 80%);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.23);
+}
+
+.bin-base {
+  bottom: -8px;
+  height: 8px;
+  background: #b8b8b8;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.17);
+}
+
+.lid-container {
+  position: absolute;
+  width: 110%;
+  height: 20px;
+  left: -5%;
+  top: -15px;
+  filter: drop-shadow(0 2px 12px #2ecc7140);
+  z-index: 999;
+}
+
+.lid {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(to top, #d2d2d2, #fafafa 75%);
+  border-radius: 12px;
+  position: relative;
+  border: 1.5px solid #e0e0e0;
+  border-top: 3px solid #fff8;
+}
+
+.lid-handle {
+  width: 40%;
+  height: 7px;
+  background: linear-gradient(90deg, #000000b5 60%, #00000098 100%);
+  border-radius: 3px;
+  position: absolute;
+  top: 52%;
+  left: 30%;
+  transform: translateY(-50%);
+  box-shadow: 0 2px 8px #2ecc7140, 0 0 8px #fff8;
+  opacity: 0.95;
+}
+
+.fill {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: var(--fill-level, 0%);
+  transition: height 0.6s cubic-bezier(.6, .8, .23, 1.18);
+  opacity: 0.92;
+  filter: blur(0.5px) brightness(1.08);
+  box-shadow: 0 2px 12px 0px #0002;
+  animation: fillBounce 0.6s cubic-bezier(.6, .8, .23, 1.18);
+}
+
+@keyframes fillBounce {
+  0% {
+    transform: scaleY(0.95);
+  }
+
+  60% {
+    transform: scaleY(1.05);
+  }
+
+  100% {
+    transform: scaleY(1);
+  }
+}
+
+#wet-fill {
+  background: linear-gradient(180deg, #2ecc71 60%, #27ae60 100%);
+}
+
+#dry-fill {
+  background: linear-gradient(180deg, #3498db 60%, #217dbb 100%);
+}
+
+#combined-fill {
+  background: linear-gradient(180deg, #f39c12 60%, #e67e22 100%);
+}
+/* -------------------------------------------------------------------- */
+
+.progress-indicators {
+  display: flex;
+  /* Added flex-wrap for very narrow screens */
+  flex-wrap: wrap;
+  justify-content: center; /* Changed from space-around */
+  margin: 22px 0 18px 0;
+  gap: 12px;
+}
+
+.indicator {
+  display: flex;
+  align-items: center;
+  font-size: 1rem;
+  background: rgba(255, 255, 255, 0.07);
+  border-radius: 12px;
+  padding: 7px 14px;
+  box-shadow: 0 1px 6px #0001;
+  transition: background 0.2s;
+  border: 1px solid #fff1;
+  /* Allow indicators to shrink if needed */
+  flex-shrink: 1;
+}
+
+.indicator-color {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  margin-right: 10px;
+  box-shadow: 0 2px 8px #0002;
+  border: 2px solid #fff2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.indicator-color.wet {
+  background: var(--wet-color);
+}
+
+.indicator-color.dry {
+  background: var(--dry-color);
+}
+
+.indicator-color.combined {
+  background: var(--combined-color);
+}
+
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: space-between;
+  margin-top: 12px;
+}
+
+.controls button {
+  /* This rule makes each button aim for roughly 45% of the container width, 
+     allowing two buttons per line. */
+  flex: 1 1 45%; 
+  min-width: 120px;
+  padding: 14px 0;
+  border: none;
+  border-radius: 28px;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #fff;
+  cursor: pointer;
+  background: linear-gradient(90deg, #23283a 0%, #23283a 100%);
+  box-shadow: 0 2px 12px #0002;
+  transition: transform 0.19s, box-shadow 0.18s, background 0.2s;
+  outline: none;
+  letter-spacing: 0.01em;
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.controls button span {
+  font-size: 1.2em;
+  vertical-align: middle;
+}
+
+.controls button:hover:not(:disabled) {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 5px 18px rgba(0, 0, 0, 0.28);
+  filter: brightness(1.08);
+}
+
+.controls button:active:not(:disabled) {
+  filter: brightness(0.97);
+  transform: scale(0.98);
+}
+
+.controls button:disabled {
+  background: #555;
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.controls .wet {
+  background: linear-gradient(90deg, #2ecc71 60%, #27ae60 100%);
+}
+
+.controls .dry {
+  background: linear-gradient(90deg, #3498db 60%, #217dbb 100%);
+}
+
+.controls .combined {
+  background: linear-gradient(90deg, #f39c12 60%, #e67e22 100%);
+}
+
+.controls .reset {
+  background: linear-gradient(90deg, #e74c3c 60%, #c0392b 100%);
+  /* The "flex-basis: 100%" rule was removed from here */
+}
+
+/* --- No changes needed for particles or footer --- */
+.trash-particle {
+  pointer-events: none;
+  position: absolute;
+  will-change: transform, opacity;
+  transition: none;
+  z-index: 10;
+  box-shadow: 0 2px 12px 0px #0003;
+  border: 2px solid #fff3;
+}
+
+.trash-particle.wet {
+  box-shadow: 0 2px 12px 0px #2ecc7144;
+}
+
+.trash-particle.dry {
+  box-shadow: 0 2px 12px 0px #3498db44;
+}
+
+.trash-particle.combined {
+  box-shadow: 0 2px 12px 0px #f39c1244;
+}
+
+.footer {
+  margin-top: 24px;
+  color: var(--secondary-text);
+  font-size: 0.9rem;
+  opacity: 0.7;
+  letter-spacing: 0.01em;
+  border-top: 1px solid #4443;
+  padding-top: 12px;
+}
+/* ------------------------------------------------- */
+
+/* Removed the old media query as styles are now fluid. 
+   You can add breakpoints back if specific overrides are needed for certain screen sizes,
+   but clamp() and flexbox handle most cases automatically. */
