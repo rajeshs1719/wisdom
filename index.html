@@ -1,13 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>AI Smart Bin Dashboard</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="style.css" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
 </head>
+
 <body>
   <main class="dashboard-container">
     <header class="header">
@@ -23,9 +25,15 @@
           </div>
         </div>
         <div class="bin-body">
-          <div class="compartment" id="wet-comp"><div class="fill" id="wet-fill"></div></div>
-          <div class="compartment" id="dry-comp"><div class="fill" id="dry-fill"></div></div>
-          <div class="compartment" id="combined-comp"><div class="fill" id="combined-fill"></div></div>
+          <div class="compartment" id="wet-comp">
+            <div class="fill" id="wet-fill"></div>
+          </div>
+          <div class="compartment" id="dry-comp">
+            <div class="fill" id="dry-fill"></div>
+          </div>
+          <div class="compartment" id="combined-comp">
+            <div class="fill" id="combined-fill"></div>
+          </div>
         </div>
         <div class="bin-base"></div>
       </div>
@@ -52,5 +60,34 @@
     </section>
   </main>
   <script src="script.js"></script>
+  <!-- Firebase SDK -->
+  <script type="module">
+    // Import Firebase modules
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-app.js";
+    import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-database.js";
+
+    // Your Firebase configuration (replace with your actual config from Firebase Console)
+    const firebaseConfig = {
+      apiKey: "AIzaSyDp8cGmp6RMt2WuOOhY-BUkvRPcdSJjV3U",
+      authDomain: "smartbin-a9606.firebaseapp.com",
+      databaseURL: "https://smartbin-a9606-default-rtdb.firebaseio.com",
+      projectId: "smartbin-a9606",
+      storageBucket: "smartbin-a9606.firebasestorage.app",
+      messagingSenderId: "1011684401858",
+      appId: "1:1011684401858:web:4250ce60dfa3638ab1d15b",
+      measurementId: "G-VFC7BC501W"
+    };
+
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    // Expose db globally so script.js can access it
+    window.db = db;
+    window.dbRef = ref;
+    window.dbSet = set;
+  </script>
+
 </body>
+
 </html>
