@@ -55,7 +55,8 @@ body {
   width: 100%;
   backdrop-filter: blur(8px);
   position: relative;
-  margin: 0; /* Removed margin to rely on body padding */
+  margin: 0;
+  /* Removed margin to rely on body padding */
 }
 
 .header h1 {
@@ -225,13 +226,15 @@ body {
 #combined-fill {
   background: linear-gradient(180deg, #f39c12 60%, #e67e22 100%);
 }
+
 /* -------------------------------------------------------------------- */
 
 .progress-indicators {
   display: flex;
   /* Added flex-wrap for very narrow screens */
   flex-wrap: wrap;
-  justify-content: center; /* Changed from space-around */
+  justify-content: center;
+  /* Changed from space-around */
   margin: 22px 0 18px 0;
   gap: 12px;
 }
@@ -285,7 +288,7 @@ body {
 .controls button {
   /* This rule makes each button aim for roughly 45% of the container width, 
      allowing two buttons per line. */
-  flex: 1 1 45%; 
+  flex: 1 1 45%;
   min-width: 120px;
   padding: 14px 0;
   border: none;
@@ -378,8 +381,93 @@ body {
   border-top: 1px solid #4443;
   padding-top: 12px;
 }
-/* ------------------------------------------------- */
 
-/* Removed the old media query as styles are now fluid. 
-   You can add breakpoints back if specific overrides are needed for certain screen sizes,
-   but clamp() and flexbox handle most cases automatically. */
+/* Container for camera & upload buttons */
+.camera-controls {
+    margin-top: 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    align-items: center;
+}
+
+/* Row for camera buttons */
+.camera-row {
+    display: flex;
+    gap: 12px;
+    justify-content: flex-start;
+}
+
+/* Row for upload input */
+.upload-row {
+    display: flex;
+    gap: 12px;
+    justify-content: flex-start;
+}
+
+/* Common button styling */
+.camera-row button {
+    padding: 10px 18px;
+    font-size: 16px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    font-weight: 600;
+}
+
+/* Open/Close Camera Button */
+#camera-toggle {
+    background-color: #4CAF50;
+    color: white;
+}
+
+#camera-toggle:hover {
+    background-color: #45a049;
+    transform: translateY(-2px);
+}
+
+/* Capture Button */
+#capture-btn {
+    background-color: #2196F3;
+    color: white;
+}
+
+#capture-btn:disabled {
+    background-color: #a0c4f3;
+    cursor: not-allowed;
+}
+
+#capture-btn:hover:enabled {
+    background-color: #1976d2;
+    transform: translateY(-2px);
+}
+
+/* File Upload Input Styling */
+#upload-input {
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+#upload-input:hover {
+    border-color: #2196F3;
+    box-shadow: 0 2px 6px rgba(33, 150, 243, 0.2);
+}
+
+/* Responsive design */
+@media (max-width: 480px) {
+    .camera-row,
+    .upload-row {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .camera-row button,
+    #upload-input {
+        width: 100%;
+    }
+}

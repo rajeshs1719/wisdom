@@ -62,17 +62,21 @@
       <h2>Smart Capture</h2>
       <video id="camera" autoplay playsinline width="320" height="240" style="border:1px solid #ccc;"></video>
       <canvas id="snapshot" width="320" height="240" style="display:none;"></canvas>
-      <div style="margin-top:10px;">
-        <button id="camera-toggle">Open Camera</button>
-        <button id="capture-btn" disabled>Capture</button>
-
-        <!-- Upload from gallery -->
-        <input type="file" id="upload-input" accept="image/*">
-
+      <div class="camera-controls">
+        <div class="camera-row">
+          <button id="camera-toggle">Open Camera</button>
+          <button id="capture-btn" disabled>Capture</button>
+        </div>
+        <div class="upload-row">
+          <input type="file" id="upload-input" accept="image/*">
+        </div>
       </div>
+
+
     </section>
 
   </main>
+  <script src="https://cdn.jsdelivr.net/npm/inferencejs"></script>
   <script src="script.js"></script>
   <!-- Firebase SDK -->
   <script type="module">
@@ -82,14 +86,14 @@
 
     // Your Firebase configuration (replace with your actual config from Firebase Console)
     const firebaseConfig = {
-      apiKey: "API",
-      authDomain: "firebaaase",
-      databaseURL: "database",
-      projectId: "ID",
-      storageBucket: "bucket",
-      messagingSenderId: "id",
-      appId: "idb",
-      measurementId: "G"
+      apiKey: "AIzaSyDp8cGmp6RMt2WuOOhY-BUkvRPcdSJjV3U",
+      authDomain: "smartbin-a9606.firebaseapp.com",
+      databaseURL: "https://smartbin-a9606-default-rtdb.firebaseio.com",
+      projectId: "smartbin-a9606",
+      storageBucket: "smartbin-a9606.firebasestorage.app",
+      messagingSenderId: "1011684401858",
+      appId: "1:1011684401858:web:4250ce60dfa3638ab1d15b",
+      measurementId: "G-VFC7BC501W"
     };
 
     // Initialize Firebase
@@ -101,21 +105,6 @@
     window.dbRef = ref;
     window.dbSet = set;
   </script>
-
 </body>
 
 </html>
-
-
-<!-- 
-    const firebaseConfig = {
-      apiKey: "AIzaSyDp8cGmp6RMt2WuOOhY-BUkvRPcdSJjV3U",
-      authDomain: "smartbin-a9606.firebaseapp.com",
-      databaseURL: "https://smartbin-a9606-default-rtdb.firebaseio.com",
-      projectId: "smartbin-a9606",
-      storageBucket: "smartbin-a9606.firebasestorage.app",
-      messagingSenderId: "1011684401858",
-      appId: "1:1011684401858:web:4250ce60dfa3638ab1d15b",
-      measurementId: "G-VFC7BC501W"
-    }; 
-    -->
