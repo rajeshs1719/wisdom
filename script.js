@@ -377,35 +377,29 @@ document.addEventListener('DOMContentLoaded', () => {
             const file = e.target.files[0];
             if (!file) return;
 
-            const reader = new FileReader();
-            reader.onload = async function (event) {
-                const dataUrl = event.target.result;
-                // Strip the prefix (data:image/...;base64,)
-                const base64Image = dataUrl.split(",")[1];
+            const formData = new FormData();
+            formData.append("file", file); // send as raw file
 
-                try {
-                    const res = await fetch(
-                        "https://serverless.roboflow.com/dry-and-wet-waste-sl1a5/1?api_key=vx80midQi9HfNqQsvBnq",
-                        {
-                            method: "POST",
-                            headers: { "Content-Type": "application/x-www-form-urlencoded" },
-                            body: `image=${base64Image}` // send raw base64, do NOT encodeURIComponent
-                        }
-                    );
-                    const data = await res.json();
-                    console.log("Roboflow response:", data);
+            try {
+                const res = await fetch(
+                    "https://serverless.roboflow.com/dry-and-wet-waste-sl1a5/1?api_key=vx80midQi9HfNqQsvBnq",
+                    {
+                        method: "POST",
+                        body: formData
+                    }
+                );
+                const data = await res.json();
+                console.log("Roboflow response:", data);
 
-                    const predictedClass = data.predictions?.[0]?.class || "combined";
-                    handleTrashDrop(predictedClass.toLowerCase());
-                } catch (err) {
-                    console.error("Prediction error:", err);
-                }
-            };
-
-            reader.readAsDataURL(file);
+                const predictedClass = data.predictions?.[0]?.class || "combined";
+                handleTrashDrop(predictedClass.toLowerCase());
+            } catch (err) {
+                console.error("Prediction error:", err);
+            }
         });
-
 
     });
 
 });
+
+// vx80midQi9HfNqQsvBnq
