@@ -313,44 +313,71 @@ document.addEventListener('DOMContentLoaded', () => {
             buttons[type].disabled = state || fills[type].value >= 100;
         });
     }
+    const cameraToggleBtn = document.getElementById("camera-toggle");
+    const captureBtn = document.getElementById("capture-btn");
+    const videoEl = document.getElementById("camera");
+    const canvasEl = document.getElementById("snapshot");
 
-    openCameraBtn.addEventListener("click", async () => {
-        try {
-            stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
-            videoEl.srcObject = stream;
-            captureBtn.disabled = false;
-        } catch (err) {
-            console.error("Camera error:", err);
-            alert("Could not access camera.");
+    cameraToggleBtn.addEventListener("click", async () => {
+        if (!stream) {
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+                videoEl.srcObject = stream;
+                captureBtn.disabled = false;
+                cameraToggleBtn.textContent = "Close Camera";
+            } catch (err) {
+                console.error("Camera error:", err);
+                alert("Could not access camera.");
+            }
+        } else {
+            stream.getTracks().forEach(track => track.stop());
+            stream = null;
+            videoEl.srcObject = null;
+            captureBtn.disabled = true;
+            cameraToggleBtn.textContent = "Open Camera";
         }
     });
 
+    // ✅ Capture photo and send to Roboflow
     captureBtn.addEventListener("click", async () => {
-        // Draw video frame to canvas
         const ctx = canvasEl.getContext("2d");
         ctx.drawImage(videoEl, 0, 0, canvasEl.width, canvasEl.height);
-
-        // Convert to base64
         const base64Image = canvasEl.toDataURL("image/jpeg");
 
-        // Send to Roboflow API
         try {
             const res = await fetch("https://serverless.roboflow.com/dry-and-wet-waste-sl1a5/1?api_key=vx80midQi9HfNqQsvBnq", {
                 method: "POST",
                 headers: { "Content-Type": "application/x-www-form-urlencoded" },
                 body: `image=${encodeURIComponent(base64Image)}`
             });
-
             const data = await res.json();
-            console.log("Roboflow response:", data);
-
             const predictedClass = data.predictions?.[0]?.class || "combined";
-
-            // Call your existing function
             handleTrashDrop(predictedClass.toLowerCase());
-
         } catch (err) {
             console.error("Prediction error:", err);
         }
+    });
+
+    // ✅ Gallery upload
+    document.getElementById("upload-input").addEventListener("change", async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = async function (event) {
+            const base64Image = event.target.result;
+            try {
+                const res = await fetch("https://serverless.roboflow.com/dry-and-wet-waste-sl1a5/1?api_key=vx80midQi9HfNqQsvBnq", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                    body: `image=${encodeURIComponent(base64Image)}`
+                });
+                const data = await res.json();
+                const predictedClass = data.predictions?.[0]?.class || "combined";
+                handleTrashDrop(predictedClass.toLowerCase());
+            } catch (err) {
+                console.error("Prediction error:", err);
+            }
+        };
+        reader.readAsDataURL(file);
     });
 });
