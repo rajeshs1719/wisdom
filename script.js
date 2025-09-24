@@ -335,7 +335,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Send to Roboflow API
         try {
-            const res = await fetch("https://serverless.roboflow.com/dry-and-wet-waste-sl1a5/1?api_key=YOUR_API_KEY", {
+            const res = await fetch("https://serverless.roboflow.com/dry-and-wet-waste-sl1a5/1?api_key=vx80midQi9HfNqQsvBnq", {
                 method: "POST",
                 headers: { "Content-Type": "application/x-www-form-urlencoded" },
                 body: `image=${encodeURIComponent(base64Image)}`
