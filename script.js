@@ -313,7 +313,7 @@ document.addEventListener('DOMContentLoaded', () => {
             buttons.toggleCamera.textContent = 'Open Camera';
         } else {
             try {
-                cameraStream = await navigator.mediaDevices.getUserMedia({ video: true });
+                cameraStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { exact: "environment" } } });
                 videoElement.srcObject = cameraStream;
                 buttons.capture.disabled = false;
                 buttons.toggleCamera.textContent = 'Close Camera';
