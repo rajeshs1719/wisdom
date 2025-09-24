@@ -135,6 +135,12 @@
 //   }
 // });
 
+
+const openCameraBtn = document.getElementById("open-camera");
+const captureBtn = document.getElementById("capture-btn");
+const videoEl = document.getElementById("camera");
+const canvasEl = document.getElementById("snapshot");
+let stream;
 document.addEventListener('DOMContentLoaded', () => {
     const lidContainer = document.getElementById('lid-container');
     const lid = document.getElementById('lid');
@@ -246,6 +252,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
     }
 
+
     function dropTrashParticle(type) {
         const particle = document.createElement('div');
         particle.className = 'trash-particle ' + type;
@@ -306,4 +313,44 @@ document.addEventListener('DOMContentLoaded', () => {
             buttons[type].disabled = state || fills[type].value >= 100;
         });
     }
+
+    openCameraBtn.addEventListener("click", async () => {
+        try {
+            stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+            videoEl.srcObject = stream;
+            captureBtn.disabled = false;
+        } catch (err) {
+            console.error("Camera error:", err);
+            alert("Could not access camera.");
+        }
+    });
+
+    captureBtn.addEventListener("click", async () => {
+        // Draw video frame to canvas
+        const ctx = canvasEl.getContext("2d");
+        ctx.drawImage(videoEl, 0, 0, canvasEl.width, canvasEl.height);
+
+        // Convert to base64
+        const base64Image = canvasEl.toDataURL("image/jpeg");
+
+        // Send to Roboflow API
+        try {
+            const res = await fetch("https://serverless.roboflow.com/dry-and-wet-waste-sl1a5/1?api_key=YOUR_API_KEY", {
+                method: "POST",
+                headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                body: `image=${encodeURIComponent(base64Image)}`
+            });
+
+            const data = await res.json();
+            console.log("Roboflow response:", data);
+
+            const predictedClass = data.predictions?.[0]?.class || "combined";
+
+            // Call your existing function
+            handleTrashDrop(predictedClass.toLowerCase());
+
+        } catch (err) {
+            console.error("Prediction error:", err);
+        }
+    });
 });
