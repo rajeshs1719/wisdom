@@ -136,11 +136,7 @@
 // });
 
 
-const openCameraBtn = document.getElementById("open-camera");
-const captureBtn = document.getElementById("capture-btn");
-const videoEl = document.getElementById("camera");
-const canvasEl = document.getElementById("snapshot");
-let stream;
+
 document.addEventListener('DOMContentLoaded', () => {
     const lidContainer = document.getElementById('lid-container');
     const lid = document.getElementById('lid');
@@ -313,71 +309,103 @@ document.addEventListener('DOMContentLoaded', () => {
             buttons[type].disabled = state || fills[type].value >= 100;
         });
     }
-    const cameraToggleBtn = document.getElementById("camera-toggle");
-    const captureBtn = document.getElementById("capture-btn");
-    const videoEl = document.getElementById("camera");
-    const canvasEl = document.getElementById("snapshot");
 
-    cameraToggleBtn.addEventListener("click", async () => {
-        if (!stream) {
+    document.addEventListener('DOMContentLoaded', () => {
+        const cameraToggleBtn = document.getElementById("camera-toggle");
+        const captureBtn = document.getElementById("capture-btn");
+        const videoEl = document.getElementById("camera");
+        const canvasEl = document.getElementById("snapshot");
+        const uploadInput = document.getElementById("upload-input");
+
+        let stream = null;
+
+        // ✅ Unified function to process image
+        async function processImage(base64Image) {
             try {
-                stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
-                videoEl.srcObject = stream;
-                captureBtn.disabled = false;
-                cameraToggleBtn.textContent = "Close Camera";
-            } catch (err) {
-                console.error("Camera error:", err);
-                alert("Could not access camera.");
-            }
-        } else {
-            stream.getTracks().forEach(track => track.stop());
-            stream = null;
-            videoEl.srcObject = null;
-            captureBtn.disabled = true;
-            cameraToggleBtn.textContent = "Open Camera";
-        }
-    });
+                const res = await fetch(
+                    "https://serverless.roboflow.com/dry-and-wet-waste-sl1a5/1?api_key=vx80midQi9HfNqQsvBnq",
+                    {
+                        method: "POST",
+                        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                        body: `image=${base64Image}` // raw base64, no encodeURIComponent
+                    }
+                );
 
-    // ✅ Capture photo and send to Roboflow
-    captureBtn.addEventListener("click", async () => {
-        const ctx = canvasEl.getContext("2d");
-        ctx.drawImage(videoEl, 0, 0, canvasEl.width, canvasEl.height);
-        const base64Image = canvasEl.toDataURL("image/jpeg");
-
-        try {
-            const res = await fetch("https://serverless.roboflow.com/dry-and-wet-waste-sl1a5/1?api_key=vx80midQi9HfNqQsvBnq", {
-                method: "POST",
-                headers: { "Content-Type": "application/x-www-form-urlencoded" },
-                body: `image=${encodeURIComponent(base64Image)}`
-            });
-            const data = await res.json();
-            const predictedClass = data.predictions?.[0]?.class || "combined";
-            handleTrashDrop(predictedClass.toLowerCase());
-        } catch (err) {
-            console.error("Prediction error:", err);
-        }
-    });
-
-    // ✅ Gallery upload
-    document.getElementById("upload-input").addEventListener("change", async (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
-        const reader = new FileReader();
-        reader.onload = async function (event) {
-            const base64Image = event.target.result;
-            try {
-                const res = await fetch("https://serverless.roboflow.com/dry-and-wet-waste-sl1a5/1?api_key=vx80midQi9HfNqQsvBnq", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/x-www-form-urlencoded" },
-                    body: `image=${encodeURIComponent(base64Image)}`
-                });
                 const data = await res.json();
+                console.log("Roboflow response:", data);
+
                 const predictedClass = data.predictions?.[0]?.class || "combined";
                 handleTrashDrop(predictedClass.toLowerCase());
             } catch (err) {
                 console.error("Prediction error:", err);
             }
-        };
-        reader.readAsDataURL(file);
+        }
+
+        // Camera toggle
+        cameraToggleBtn.addEventListener("click", async () => {
+            if (!stream) {
+                try {
+                    stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+                    videoEl.srcObject = stream;
+                    captureBtn.disabled = false;
+                    cameraToggleBtn.textContent = "Close Camera";
+                } catch (err) {
+                    console.error("Camera error:", err);
+                    alert("Could not access camera.");
+                }
+            } else {
+                stream.getTracks().forEach(track => track.stop());
+                stream = null;
+                videoEl.srcObject = null;
+                captureBtn.disabled = true;
+                cameraToggleBtn.textContent = "Open Camera";
+            }
+        });
+
+        // Capture from camera
+        captureBtn.addEventListener("click", () => {
+            const ctx = canvasEl.getContext("2d");
+            ctx.drawImage(videoEl, 0, 0, canvasEl.width, canvasEl.height);
+
+            const dataUrl = canvasEl.toDataURL("image/jpeg");
+            const base64Image = dataUrl.split(",")[1]; // strip prefix
+            processImage(base64Image);
+        });
+
+        // Upload from gallery
+        document.getElementById("upload-input").addEventListener("change", async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = async function (event) {
+                const dataUrl = event.target.result;
+                // Strip the prefix (data:image/...;base64,)
+                const base64Image = dataUrl.split(",")[1];
+
+                try {
+                    const res = await fetch(
+                        "https://serverless.roboflow.com/dry-and-wet-waste-sl1a5/1?api_key=vx80midQi9HfNqQsvBnq",
+                        {
+                            method: "POST",
+                            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                            body: `image=${base64Image}` // send raw base64, do NOT encodeURIComponent
+                        }
+                    );
+                    const data = await res.json();
+                    console.log("Roboflow response:", data);
+
+                    const predictedClass = data.predictions?.[0]?.class || "combined";
+                    handleTrashDrop(predictedClass.toLowerCase());
+                } catch (err) {
+                    console.error("Prediction error:", err);
+                }
+            };
+
+            reader.readAsDataURL(file);
+        });
+
+
     });
+
 });
