@@ -53,12 +53,12 @@
       </div>
     </section>
     <section class="controls">
-      <button id="wet-btn" class="wet" aria-label="Add Wet Waste">Add Wet</button>
+      <!-- <button id="wet-btn" class="wet" aria-label="Add Wet Waste">Add Wet</button>
       <button id="dry-btn" class="dry" aria-label="Add Dry Waste">Add Dry</button>
-      <button id="combined-btn" class="combined" aria-label="Add Combined Waste">Add Combined</button>
+      <button id="combined-btn" class="combined" aria-label="Add Combined Waste">Add Combined</button> -->
       <button id="reset-btn" class="reset" aria-label="Reset Bin">Reset</button>
     </section>
-    <section class="camera-section">
+    <!-- <section class="camera-section">
       <h2>Smart Capture</h2>
       <video id="camera" autoplay playsinline width="320" height="240" style="border:1px solid #ccc;"></video>
       <canvas id="snapshot" width="320" height="240" style="display:none;"></canvas>
@@ -71,9 +71,8 @@
           <input type="file" id="upload-input" accept="image/*">
         </div>
       </div>
+    </section> -->
 
-
-    </section>
 
   </main>
   <script src="https://cdn.jsdelivr.net/npm/inferencejs"></script>
@@ -82,8 +81,8 @@
   <script type="module">
     // Import Firebase modules
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-app.js";
-    import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-database.js";
-
+    // import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-database.js";
+    import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-database.js";
     // Your Firebase configuration (replace with your actual config from Firebase Console)
     const firebaseConfig = {
       apiKey: "AIzaSyDp8cGmp6RMt2WuOOhY-BUkvRPcdSJjV3U",
@@ -100,10 +99,11 @@
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
-    // Expose db globally so script.js can access it
+    // Expose db and functions globally so script.js can access them
     window.db = db;
     window.dbRef = ref;
     window.dbSet = set;
+    window.dbOnValue = onValue; // <-- Add this for the listener
   </script>
 </body>
 
