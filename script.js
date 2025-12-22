@@ -415,29 +415,31 @@ document.addEventListener('DOMContentLoaded', () => {
     const lidContainer = document.getElementById('lid-container');
     const lid = document.getElementById('lid');
     const binModel = document.getElementById('bin-model');
-
-    // This will be 'null' if the button is commented out, which is fine now.
     const resetButton = document.getElementById('reset-btn');
 
-    const fills = {
+    // --- CONFIGURATION ---
+    // Update these paths based on what you see in the "FIREBASE FULL DUMP" in the console
+    const bins = {
         wet: {
             element: document.getElementById('wet-fill'),
             percentageEl: document.getElementById('wet-percentage'),
-            value: 0
+            count: 0, 
+            firebasePath: 'waste_counts/wet' // Attempting to look inside 'servo' folder
         },
         dry: {
             element: document.getElementById('dry-fill'),
             percentageEl: document.getElementById('dry-percentage'),
-            value: 0
+            count: 0,
+            firebasePath: 'waste_counts/dry'
         },
         combined: {
             element: document.getElementById('combined-fill'),
             percentageEl: document.getElementById('combined-percentage'),
-            value: 0
+            count: 0,
+            firebasePath: 'waste_counts/mixed'
         }
     };
 
-    // --- 2. CONFIGURATION AND STATE VARIABLES ---
     const rotationMap = {
         wet: -45,
         dry: 0,
@@ -445,86 +447,108 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     let animating = false;
-    let lastCommand = 0; // To prevent re-triggering from the same command
 
-    // --- 3. CORE FUNCTIONS (Bin Animation, Firebase) ---
+    // --- 2. DEBUGGING TOOL ---
+    function debugDatabaseStructure() {
+        if (!window.db || !window.dbRef || !window.dbOnValue) return;
+        
+        // Connect to the ROOT of the database
+        const rootRef = window.dbRef(window.db, '/');
+        
+        console.log("🔍 CONNECTING TO DATABASE ROOT...");
+        
+        window.dbOnValue(rootRef, (snapshot) => {
+            const data = snapshot.val();
+            console.log("==========================================");
+            console.log("🔥 FIREBASE FULL DUMP (Check this structure):", data);
+            console.log("==========================================");
+            
+            // Helpful hint if data is found but paths are wrong
+            if (data) {
+                if (data.wet !== undefined) console.log("💡 FOUND: 'wet' is at the root level.");
+                if (data.waste_counts && data.waste_counts.wet !== undefined) console.log("💡 FOUND: 'wet' is inside 'servo'.");
+                if (data.bins && data.bins.wet !== undefined) console.log("💡 FOUND: 'wet' is inside 'bins'.");
+            } else {
+                console.log("⚠️ Database seems empty or permission denied.");
+            }
+        }, { onlyOnce: true });
+    }
 
-    /**
-     * Listens for changes on the Firebase 'servo/command' path.
-     * This is the new main trigger for the application.
-     */
-    function setupFirebaseListener() {
-        // Ensure your Firebase app (db, dbRef, dbOnValue) is initialized on the window object
+    // --- 3. CORE FUNCTIONS ---
+
+    function setupFirebaseListeners() {
         if (!window.db || !window.dbRef || !window.dbOnValue) {
-            console.error("Firebase (db, dbRef, dbOnValue) is not initialized on the window object!");
-            alert("Firebase is not connected. Please check console.");
+            console.error("Firebase not initialized.");
             return;
         }
 
-        const commandRef = window.dbRef(window.db, "servo/command");
-        console.log("Setting up Firebase listener for servo/command...");
+        Object.keys(bins).forEach(type => {
+            const bin = bins[type];
+            const ref = window.dbRef(window.db, bin.firebasePath);
 
-        window.dbOnValue(commandRef, (snapshot) => {
-            const command = snapshot.val();
+            console.log(`Listening to: ${bin.firebasePath} (${type})`);
 
-            // We only act on NEW, NON-ZERO commands.
-            // When the hardware resets to 0, we'll ignore it.
-            if (command !== 0 && command !== lastCommand) {
-                console.log("Firebase command received:", command);
-                lastCommand = command; // Store the command we are acting on
+            window.dbOnValue(ref, (snapshot) => {
+                const val = snapshot.val();
+                const firebaseCount = Number(val);
 
-                if (command === 1) {
-                    handleTrashDrop('wet');
-                } else if (command === 2) {
-                    handleTrashDrop('dry');
-                } else if (command === 3) {
-                    handleTrashDrop('combined');
+                // If null (path doesn't exist), we get 0.
+                if (val === null) {
+                    console.warn(`⚠️ Path '${bin.firebasePath}' returned null. Check the Dump in console.`);
+                    return;
                 }
-            } else if (command === 0) {
-                lastCommand = 0; // Reset when the hardware resets
-            }
+
+                console.log(`✅ Data for ${type}: ${firebaseCount}`);
+
+                // Calculate Fill (Count * 2)
+                const newPercentage = firebaseCount * 2;
+
+                // Animate if count increased
+                if (firebaseCount > bin.count && bin.count !== 0) {
+                    handleTrashDrop(type);
+                }
+
+                bin.count = firebaseCount;
+                updateFillUI(type, newPercentage);
+            });
         });
     }
 
-    /**
-     * Triggers the bin lid animation and fill update.
-     * This is now called by the Firebase listener.
-     */
     function handleTrashDrop(type) {
-        // Exit if an animation is running, the type is invalid, or the bin is full
-        if (animating || !fills[type] || fills[type].value >= 100) {
-            if (!fills[type]) console.error("Invalid trash type provided:", type);
-            return;
-        }
+        if (animating) return;
 
         animating = true;
-        if (resetButton) resetButton.disabled = true; // <-- FIX: Check if button exists
+        if (resetButton) resetButton.disabled = true;
 
         const tl = gsap.timeline({
             onComplete: () => {
                 animating = false;
-                if (resetButton) resetButton.disabled = false; // <-- FIX: Check if button exists
+                if (resetButton) resetButton.disabled = false;
             }
         });
 
         tl.to(lidContainer, { rotationY: rotationMap[type], duration: 0.55, ease: "power2.out" });
         tl.to(lid, { rotationX: 110, duration: 0.40, ease: "power2.inOut" }, ">");
-        tl.call(() => {
-            dropTrashParticle(type);
-            updateFill(type, 2); // Call updateFill with 2% as requested
-            // We no longer send a command to Firebase, we are listening to it.
-        }, null, "+=0.18");
+        tl.call(() => dropTrashParticle(type), null, "+=0.18");
         tl.to(lid, { rotationX: 0, duration: 0.38, ease: "power1.in" }, "+=0.32");
         tl.to(lidContainer, { rotationY: 0, duration: 0.5, ease: "power2.inOut" }, "-=0.21");
     }
 
-    /**
-     * Creates a small visual particle for the trash drop.
-     */
+    function updateFillUI(type, percentage) {
+        const bin = bins[type];
+        const displayValue = Math.min(percentage, 100);
+
+        if (bin.element) bin.element.style.setProperty('--fill-level', `${displayValue}%`);
+        if (bin.percentageEl) bin.percentageEl.textContent = `${displayValue}%`;
+    }
+
     function dropTrashParticle(type) {
         const particle = document.createElement('div');
         particle.className = 'trash-particle ' + type;
+        
         const compElement = document.getElementById(`${type}-comp`);
+        if (!compElement || !binModel) return;
+
         const compRect = compElement.getBoundingClientRect();
         const binRect = binModel.getBoundingClientRect();
         const leftOffset = compRect.left - binRect.left + compRect.width / 2 - 9;
@@ -538,42 +562,26 @@ document.addEventListener('DOMContentLoaded', () => {
         particle.style.background = `var(--${type}-color)`;
         binModel.appendChild(particle);
 
-        gsap.to(particle, { y: 100, scale: 0.5, opacity: 0.2, duration: 0.68, ease: "bounce.out", onComplete: () => particle.remove() });
-    }
-
-    /**
-     * Updates the fill level for a given waste type by a specific amount.
-     */
-    function updateFill(type, amountToAdd) {
-        const comp = fills[type];
-        if (comp.value >= 100) return; // Bin is already full
-
-        // Add the new amount, but don't let it go over 100
-        comp.value = Math.min(comp.value + amountToAdd, 100);
-
-        comp.element.style.setProperty('--fill-level', `${comp.value}%`);
-        comp.percentageEl.textContent = `${comp.value}%`;
-    }
-
-    /**
-     * Resets all bin fill levels to 0.
-     */
-    function resetBin() {
-        Object.keys(fills).forEach(type => {
-            fills[type].value = 0;
-            fills[type].element.style.setProperty('--fill-level', '0%');
-            fills[type].percentageEl.textContent = '0%';
+        gsap.to(particle, { 
+            y: 100, scale: 0.5, opacity: 0.2, duration: 0.68, ease: "bounce.out", 
+            onComplete: () => particle.remove() 
         });
-        console.log("Bin has been reset.");
     }
 
-    // --- 4. ATTACH EVENT LISTENERS ---
+    function resetBin() {
+        Object.keys(bins).forEach(type => {
+            bins[type].count = 0;
+            updateFillUI(type, 0);
+        });
+        console.log("UI Reset.");
+    }
 
-    // The only button listener we need is for the reset button.
-    if (resetButton) resetButton.addEventListener('click', resetBin); // <-- FIX: Check if button exists
-
-    // --- 5. INITIALIZE ---
-    // Start listening for Firebase commands when the page loads.
-    setupFirebaseListener();
-
+    // --- 4. INITIALIZE ---
+    if (resetButton) resetButton.addEventListener('click', resetBin);
+    
+    // Run Debugger first
+    debugDatabaseStructure();
+    
+    // Then setup listeners
+    setupFirebaseListeners();
 });
